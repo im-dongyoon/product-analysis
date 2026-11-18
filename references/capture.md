@@ -1,5 +1,7 @@
 # 캡처 방법 (Aside 브라우저에서 확인된 것)
 
+다른 환경(Playwright MCP, Chrome DevTools MCP)은 SKILL.md 3절 표의 도구를 먼저 쓴다. 아래 요령 중 원리(스크롤 뒤 화면 크기만큼 찍기, 모바일은 390×844, 저장 뒤 1장 이상 직접 열어 보기)는 어디서나 같다.
+
 ## 저장
 - 저장 전 `await fs.mkdir(dir, { recursive: true })`. 세션 폴더가 아직 없을 수 있다.
 - `display()`로 띄운 이미지는 내 다음 대화에서 사라진다. 직접 보려면 저장 경로를 `read_file`로 연다.
