@@ -1,74 +1,89 @@
+**English** | [한국어](README.ko.md)
+
 # product-analysis
 
-서비스 하나를 전방위로 리서치·분석(리버스 엔지니어링)해서, **그 결과만 보고 같은 서비스를 다시 만들 수 있는 수준**으로 정리하는 AI 에이전트 스킬입니다. 결과물은 `index.html` 보고서를 중심으로 원고·캡처·원본 데이터가 정리된 폴더 하나입니다.
+An AI agent skill that researches and reverse-engineers a web service end to end, and documents it in enough detail that **someone could rebuild the same service from the output alone**. The result is one folder: an `index.html` report plus the markdown sources, organized screenshots, and raw data behind it.
 
-An agent skill that researches and reverse-engineers a web service end to end, and outputs one folder: an `index.html` report plus the markdown sources, organized screenshots, and raw data behind it. Written in Korean.
+It follows the [Agent Skills](https://agentskills.io/) format (`SKILL.md` + supporting files), so agents that read that format, such as Aside and Claude Code, can use it. The skill body is written in Korean.
 
-## 무엇을 보는가
+## What it covers
 
-| # | 영역 | # | 영역 |
+| # | Area | # | Area |
 |-|-|-|-|
-| A | 회사·사업 (운영사, 투자, 요금, 약관) | H | API·데이터 구조 (요청 목록, 응답 모양, 엔티티) |
-| B | 화면 전체 목록 | I | 유입·성장 (검색, 콘텐츠, 광고, 추천 장치) |
-| C | 화면별 명세 (상태, 문구 원문, 입력 규칙) | J | 운영 (고객센터, 사람이 개입하는 지점) |
-| D | 사용자 흐름 | K | 사용자 반응 (원문 인용, 직접 센 개수) |
-| E | 기능 규칙 (한도, 상태값, 권한) | L | 변화 이력 (웹 아카이브, 업데이트 노트) |
-| F | 디자인 시스템 (색, 글자, 간격, 컴포넌트) | M | AI 기능 (진행 문구, 스트리밍, 모델 단서) |
-| G | 기술 스택·인프라 | | |
+| A | Company and business (operator, funding, pricing, terms) | H | API and data model (requests, response shapes, entities) |
+| B | Full screen inventory | I | Acquisition and growth (search, content, ads, referral loops) |
+| C | Per-screen specs (states, verbatim copy, input rules) | J | Operations (support, where humans step in) |
+| D | User flows | K | User sentiment (verbatim quotes, hand-counted themes) |
+| E | Feature rules (limits, status values, permissions) | L | Change history (web archive, release notes) |
+| F | Design system (color, type, spacing, components) | M | AI features (progress copy, streaming, model hints) |
+| G | Tech stack and infrastructure | | |
 
-모든 항목에 근거를 붙입니다: `[사실]` 화면·응답·파일로 확인, `[추정]`, `[미확인]`, `[2차]`(기사·투자 DB 같은 2차 자료). 끝에는 "재현 점검표"로 화면·흐름·API를 얼마나 채웠는지 숫자로 보고합니다.
+Every item carries an evidence tag: `[사실]` (verified on a screen, response, or file), `[추정]` (inferred), `[미확인]` (not verified), `[2차]` (secondary sources such as news or funding databases). The report ends with a "reproduction checklist" that counts how many screens, flows, and APIs are fully documented.
 
-## 결과물
+## Output
 
 ```
-<서비스>/
-  index.html     보고서 (scripts/build-report.mjs로 생성)
-  docs/          보고서 원고 md (00-overview ~ 05-live-notes)
+<service>/
+  index.html     report (built by scripts/build-report.mjs)
+  docs/          report sources in markdown (00-overview to 05-live-notes)
   captures/      public · app · official · external
   data/          api · samples · extract · snapshots · source
 ```
 
-보고서는 원고를 목차·근거 태그·캡처 썸네일·캡처 모아보기·확대 보기가 있는 한 페이지로 묶습니다. 원고에 캡처 파일 이름이나 화면 ID(`P08`, `A45`)를 적으면 자동으로 연결됩니다.
+The report combines the sources into one page with a table of contents, evidence tags, screenshot strips, a screenshot gallery, and a lightbox. Screenshot file names and screen IDs (`P08`, `A45`) written in the sources are linked automatically.
 
-## 구성
+## Requirements
 
-| 파일 | 내용 |
+- An agent that can drive a browser, run JavaScript inside a page, and save screenshots
+- Node.js 18+ to build the report
+
+| Environment | Status |
 |-|-|
-| `SKILL.md` | 절차, 하지 않는 것, 기록 규칙, 산출물 규칙 |
-| `references/analysis-areas.md` | 영역별 수집 항목·출처·완료 기준 |
-| `references/capture.md` | 캡처·모바일 화면·숨은 요청 찾기 요령 |
-| `references/report-template.md` | 원고 6개의 틀 |
-| `scripts/detect-stack.js` | 프레임워크·분석·결제·인증 도구와 단서 찾기 |
-| `scripts/design-tokens.js` | 실제 쓰인 디자인 값과 사용 횟수, CSS 변수, 화면 너비 기준 |
-| `scripts/page-inventory.js` | 화면 구조, 링크, 버튼, 입력 칸 규칙, 문구 원문 |
-| `scripts/api-capture.js` | 화면이 보내는 요청과 응답 모양 기록(값은 저장하지 않고 개인정보 키는 가림) |
-| `scripts/build-report.mjs` | 분석 폴더를 `index.html` 보고서로 빌드 |
-| `assets/` | 보고서 스타일·동작, 포함된 라이브러리(marked, mermaid) |
+| [Aside](https://asidehq.com) | Original environment. Every step has been run end to end |
+| Claude Code + [Playwright MCP](https://github.com/microsoft/playwright-mcp) or [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp) | Tool mapping is in section 3 of `SKILL.md`. A full run with this setup has not been tested yet |
+| Agents without browser tools | Only the web-research areas (A, I, K, L) and specs from official docs. Everything else stays `[미확인]` |
 
-`scripts/*.js` 네 개는 브라우저 페이지에서 실행하는 식(expression)입니다. Playwright 계열 환경이면 `page.evaluate(fs.readFileSync(path, 'utf8'))`로 돌릴 수 있습니다.
+## Install
 
-## 설치
-
-[Aside](https://asidehq.com) 기준으로 작성했습니다(브라우저 조작, `page`·`snapshot` 같은 REPL 도구를 전제로 합니다).
-
+Aside:
 ```bash
-git clone https://github.com/im-dongyoon/product-analysis.git ~/.aside/u/<계정>/skills/user/product-analysis
+git clone https://github.com/im-dongyoon/product-analysis.git ~/.aside/u/<account>/skills/user/product-analysis
 ```
 
-다른 에이전트 환경에서도 `SKILL.md`의 절차와 `scripts/`는 그대로 참고할 수 있습니다. 보고서 빌드는 Node.js 18 이상만 있으면 됩니다.
-
+Claude Code (personal skill):
 ```bash
-node scripts/build-report.mjs <분석 폴더>
+git clone https://github.com/im-dongyoon/product-analysis.git ~/.claude/skills/product-analysis
+claude mcp add playwright npx @playwright/mcp@latest   # if you have no browser tool yet
 ```
 
-## 지키는 선
+Build a report only:
+```bash
+node scripts/build-report.mjs <analysis-folder>
+```
 
-- 남의 폼·DB에 아무것도 제출하지 않습니다(문의, 리드, 리뷰, 결제).
-- 인증 우회, 다른 사람 ID로 요청, 관리자 화면 로그인 시도, 취약점 검사를 하지 않습니다. 화면이 보내지 않는 API를 직접 부르지 않습니다.
-- 대량 수집을 하지 않고, 공개된 소스맵의 코드를 옮기지 않습니다.
-- 새 가입과 결제는 사용자 승인 뒤에만 합니다.
-- 분석 문서의 화면 문구·이미지는 기록용 인용입니다. 서비스를 다시 만들 때는 문구·이미지·브랜드를 바꿔 써야 합니다.
+## Contents
 
-## 라이선스
+| File | Purpose |
+|-|-|
+| `SKILL.md` | Procedure, tools per environment, guardrails, recording rules, output rules |
+| `references/analysis-areas.md` | What to collect per area, where to find it, and when it counts as done |
+| `references/capture.md` | Screenshot, mobile viewport, and hidden-request techniques |
+| `references/report-template.md` | Templates for the six source documents |
+| `scripts/detect-stack.js` | Detects frameworks and analytics, payment, and auth tools, with evidence |
+| `scripts/design-tokens.js` | Design values actually used, with counts; CSS variables; breakpoints |
+| `scripts/page-inventory.js` | Page structure, links, buttons, input rules, all visible copy |
+| `scripts/api-capture.js` | Records requests the page sends and response shapes (no values stored, personal-data keys masked) |
+| `scripts/build-report.mjs` | Builds an analysis folder into `index.html` |
+| `assets/` | Report styles and behavior, bundled libraries (marked, mermaid) |
 
-MIT. 포함된 서드파티 라이브러리는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 보세요.
+## Guardrails
+
+- Never submits anything into someone else's forms or database (inquiries, leads, reviews, payments).
+- No auth bypass, no requests with other users' IDs, no attempts to log in to admin screens, no vulnerability scanning. Never calls APIs the page itself does not send.
+- No bulk scraping. Never copies code from exposed source maps.
+- New sign-ups and payments happen only after the user approves.
+- Screen copy and images in the analysis are quoted for the record. Anyone rebuilding the service must replace copy, images, and branding.
+
+## License
+
+MIT. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for bundled third-party libraries.

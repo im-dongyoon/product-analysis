@@ -45,11 +45,23 @@ description: "서비스 하나를 전방위로 리서치·분석(리버스 엔�
 | L | 변화 이력 (기능이 생긴 순서, 가격 변화) | web.archive.org, 업데이트 내역, 앱 버전 기록 |
 | M | AI 기능 (해당 시: 입력·출력 형식, 진행 문구, 출처 표시, 거절·한도, 스트리밍 방식) | 직접 써 보기 + `api-capture.js` |
 
-## 3. 스크립트 (모두 실사이트에서 동작 확인함)
+## 3. 환경과 스크립트
 
-`scripts/` 아래. 쓰는 법은 공통:
+필요한 것: 브라우저를 조작하고(이동·클릭·입력), 페이지 안에서 JS를 실행하고, 캡처를 저장할 수 있는 에이전트. 보고서 빌드는 Node.js 18 이상. 브라우저 도구가 없으면 웹 조사 영역(A·I·K·L)과 공식 문서 기반 명세만 할 수 있고, 나머지는 [미확인]으로 남긴다.
+
+| 할 일 | Aside | Claude Code + Playwright MCP | Claude Code + Chrome DevTools MCP |
+|-|-|-|-|
+| 화면 구조 읽기 | `snapshot(page)` | `browser_snapshot` | `take_snapshot` |
+| 스크립트 실행 | `page.evaluate(파일 내용)` | `browser_evaluate`의 `function`에 `() => ` + 파일 내용 | `evaluate_script`에 `sourcePath: <파일>`, `format: "script"` |
+| 캡처 | `page.screenshot({path})` | `browser_take_screenshot`(`fullPage`, `filename`) | `take_screenshot` |
+| 모바일 화면 | `references/capture.md`의 CDP 방법 | `browser_resize` 390×844 | `emulate`의 `viewport: "390x844x2,mobile,touch"` |
+| 다크·라이트 | `page.emulateMedia({colorScheme})` | `browser_emulate_media` | `emulate`의 `colorScheme` |
+| 요청 목록 | `api-capture.js` | `browser_network_requests` + `api-capture.js`(응답 모양까지) | `list_network_requests`·`get_network_request` + `api-capture.js` |
+| 오늘 날짜 | `get_time()` | 시스템 날짜 | 시스템 날짜 |
+
+스크립트는 `<SKILL_DIR>/scripts/`(이 SKILL.md가 있는 폴더) 아래 있다. 모두 페이지 안에서 실행하는 식(expression)이고 결과를 JSON으로 돌려준다. Aside 예:
 ```js
-const SD = '<SKILL_DIR>/scripts/'; // <SKILL_DIR> = 이 SKILL.md가 있는 폴더의 절대 경로
+const SD = '<SKILL_DIR>/scripts/';
 const runS = async n => page.evaluate(await fs.readFile(SD + n, 'utf8'));
 ```
 - `detect-stack.js`: 프레임워크·분석·광고·결제·로그인·인프라 도구와 단서, 추적 ID, 서드파티 도메인, 쿠키·저장소 키 이름, 메타·구조화 데이터 유형.
@@ -74,7 +86,7 @@ const runS = async n => page.evaluate(await fs.readFile(SD + n, 'utf8'));
 ## 5. 기록 규칙
 
 - 모든 항목에 [사실](본 화면·URL·파일 있음) / [추정](근거 적음) / [미확인]. 2차 자료(투자 DB, 트래픽 추정 사이트)는 [2차]를 붙인다.
-- 화면 문구·가격·숫자는 원문 그대로. 요약·반올림 금지. 가격·정책에는 확인 날짜(`get_time()` 기준).
+- 화면 문구·가격·숫자는 원문 그대로. 요약·반올림 금지. 가격·정책에는 확인 날짜(시스템 날짜 기준. Aside는 `get_time()`).
 - 개수는 직접 센 숫자와 화면 표시 숫자를 맞춰 본다(2026-09 zuzu 자료집: 눈대중 60개 이상, 실제 48개).
 - 블로그 요약글은 출처로 쓰지 않는다. 공식 문서, 실제 화면, 원문 리뷰, 등록 기록만.
 
@@ -115,7 +127,7 @@ const runS = async n => page.evaluate(await fs.readFile(SD + n, 'utf8'));
 
 만들기·확인:
 1. `node <이 스킬>/scripts/build-report.mjs <폴더>` 실행. 출력의 `missingImageRefs`(원고에 적었는데 파일이 없는 캡처)를 0에 가깝게 고친다.
-2. 폴더에서 빈 포트로 `python3 -m http.server <포트> --bind 127.0.0.1`을 띄우고(이미 쓰는 포트는 피한다) `index.html`을 연다. 맨 위, 표가 많은 절, 화면 절(썸네일 줄), 캡처 모아보기, 확대 보기를 다크·라이트(`page.emulateMedia({colorScheme})`) 둘 다 찍어 직접 본다. 확인 스크롤 전에 `scroll-behavior`를 `auto`로 바꾼다.
+2. 폴더에서 빈 포트로 `python3 -m http.server <포트> --bind 127.0.0.1`을 띄우고(이미 쓰는 포트는 피한다) `index.html`을 연다. 맨 위, 표가 많은 절, 화면 절(썸네일 줄), 캡처 모아보기, 확대 보기를 다크·라이트 둘 다 찍어 직접 본다(전환 방법은 3절 표). 확인 스크롤 전에 `scroll-behavior`를 `auto`로 바꾼다.
 3. 끝나면 서버를 끄고, 중간 원고(`parts/` 등)는 지운다. 폴더에는 위 구조만 남긴다.
 
 공유용 한 장(요청할 때만): 폴더 보고서는 로컬 파일을 불러와서 그대로 공유되지 않는다. 핵심 흐름·재현 포인트·구조·요금·디자인·시장·남은 질문만 추린 HTML 한 파일을 따로 만든다. 대표 캡처 8~10장은 JPEG로 줄여(macOS: `sips -s format jpeg -s formatOptions 58 -Z 1440`) 파일 안에 넣고, 외부 글꼴·라이브러리 없이 만든다. 가입 계정 이메일 같은 개인 정보와 내부 결정 사항은 뺀다. claude.ai 아티팩트로 올릴 때는 파일을 첨부하고 "한 글자도 바꾸지 말고 그대로"라고 요청한다. 공유 범위는 사용자가 정한다. 아티팩트 안에서는 `scroll-behavior:smooth`와 스크롤 중 `scrollIntoView` 호출이 화면 이동을 끊는다(2026-11-18 확인). 목차 이동은 `window.scrollTo`로 직접 처리하고, 현재 위치 표시는 목차 줄의 `scrollLeft`만 바꾼다. 올린 뒤 실제 아티팩트 링크에서 휠 스크롤과 목차 클릭을 시험한다.
@@ -124,7 +136,7 @@ const runS = async n => page.evaluate(await fs.readFile(SD + n, 'utf8'));
 
 ## 7. 나눠서 할 때
 
-서비스 하나가 크면 하위 에이전트로 나눈다. 생성은 한 번에 하나씩 요청한다.
+서비스 하나가 크고 하위 에이전트를 쓸 수 있는 환경이면 나눈다. 생성은 한 번에 하나씩 요청한다.
 - 가: A·K·L·I(광고·검색 부분) 웹 조사
 - 나: B·C·D·E·J·M 화면·흐름 (사용자의 로그인 계정으로 상태를 바꾸는 조작은 이 에이전트만)
 - 다: F·G·H 디자인·기술·데이터 (읽기만)
